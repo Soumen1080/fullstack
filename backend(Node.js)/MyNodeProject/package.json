@@ -1,0 +1,16 @@
+{
+  "name": "mynodeproject",
+  "version": "1.0.0",
+  "description": "it is my first node project ",
+  "license": "ISC",
+  "author": "soumen mandal",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "figlet": "^1.9.3",
+    "give-me-a-joke": "^0.5.1"
+  }
+}

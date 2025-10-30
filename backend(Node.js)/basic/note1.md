@@ -283,18 +283,23 @@ node processInfo.js arg1 arg2 --flag=value
 
 ## 7. Export in Files
 
-Use `module.exports` to export functions, objects, or variables from one file to another.
+In Node.js, you can share code between files using the module system. There are different ways to export and import.
+
+### 7.1 Using `module.exports` (Object Export)
+
+Export multiple functions/variables as an object:
 
 **math.js:**
 ```javascript
 function add(a, b) {
-    return a + b;
+  return a + b;
 }
 
 function subtract(a, b) {
-    return a - b;
+  return a - b;
 }
 
+// Exporting as an object
 module.exports = { add, subtract };
 ```
 
@@ -303,6 +308,193 @@ module.exports = { add, subtract };
 const math = require('./math');
 console.log(math.add(5, 3));      // 8
 console.log(math.subtract(5, 3)); // 2
+```
+
+### 7.2 Using `exports` (Variable Export)
+
+Export individual functions/variables directly:
+
+**math.js:**
+```javascript
+// Exporting as individual variables
+exports.add = function(a, b) {
+  return a + b;
+};
+
+exports.subtract = function(a, b) {
+  return a - b;
+};
+
+exports.PI = 3.14159;
+```
+
+**app.js:**
+```javascript
+const math = require('./math');
+console.log(math.add(5, 3));      // 8
+console.log(math.PI);             // 3.14159
+```
+
+### 7.3 Key Differences
+
+**`module.exports` vs `exports`:**
+
+| Feature | `module.exports` | `exports` |
+|---------|-----------------|-----------|
+| **Usage** | Replaces entire export object | Adds properties to export object |
+| **Flexibility** | Can export any type (function, class, object) | Only adds properties |
+| **Default** | Initially points to same object as `exports` | Shorthand reference to `module.exports` |
+
+**Example showing the difference:**
+
+**using-module-exports.js:**
+```javascript
+// This WORKS - replaces entire export
+module.exports = function() {
+  console.log("I'm a function!");
+};
+```
+
+**using-exports.js:**
+```javascript
+// This DOESN'T WORK - breaks the reference
+exports = function() {
+  console.log("Won't work!");
+};
+
+// This WORKS - adds property
+exports.greet = function() {
+  console.log("This works!");
+};
+```
+
+### 7.4 Export Patterns
+
+**Pattern 1: Export a Single Function**
+```javascript
+// greet.js
+module.exports = function(name) {
+  return `Hello, ${name}!`;
+};
+
+// app.js
+const greet = require('./greet');
+console.log(greet('John')); // Hello, John!
+```
+
+**Pattern 2: Export a Class**
+```javascript
+// User.js
+class User {
+  constructor(name, age) {
+    this.name = name;
+    this.age = age;
+  }
+  
+  getInfo() {
+    return `${this.name} is ${this.age} years old`;
+  }
+}
+
+module.exports = User;
+
+// app.js
+const User = require('./User');
+const user = new User('Alice', 25);
+console.log(user.getInfo()); // Alice is 25 years old
+```
+
+**Pattern 3: Export Multiple Items**
+```javascript
+// utils.js
+const name = "Utils Module";
+const version = "1.0.0";
+
+function log(message) {
+  console.log(`[LOG]: ${message}`);
+}
+
+function error(message) {
+  console.error(`[ERROR]: ${message}`);
+}
+
+module.exports = { name, version, log, error };
+
+// app.js
+const utils = require('./utils');
+utils.log('Application started');
+console.log(utils.version); // 1.0.0
+```
+
+**Pattern 4: Mixed Exports**
+```javascript
+// config.js
+exports.port = 3000;
+exports.host = 'localhost';
+exports.database = {
+  url: 'mongodb://localhost:27017',
+  name: 'mydb'
+};
+
+// app.js
+const config = require('./config');
+console.log(config.port);     // 3000
+console.log(config.database.url);
+```
+
+### 7.5 Important Notes
+
+⚠️ **Don't mix patterns:**
+```javascript
+// BAD - Don't do this
+exports.add = (a, b) => a + b;
+module.exports = { subtract: (a, b) => a - b };
+// Only subtract will be exported, add will be lost!
+```
+
+✅ **Good practice:**
+```javascript
+// GOOD - Use one pattern consistently
+module.exports = {
+  add: (a, b) => a + b,
+  subtract: (a, b) => a - b
+};
+```
+
+### 7.6 Practical Example
+
+**calculator.js:**
+```javascript
+const PI = 3.14159;
+
+const add = (a, b) => a + b;
+const subtract = (a, b) => a - b;
+const multiply = (a, b) => a * b;
+const divide = (a, b) => b !== 0 ? a / b : 'Cannot divide by zero';
+
+const circleArea = (radius) => PI * radius * radius;
+
+// Export everything at once
+module.exports = {
+  PI,
+  add,
+  subtract,
+  multiply,
+  divide,
+  circleArea
+};
+```
+
+**app.js:**
+```javascript
+const calc = require('./calculator');
+
+console.log('Addition:', calc.add(10, 5));           // 15
+console.log('Subtraction:', calc.subtract(10, 5));   // 5
+console.log('Multiplication:', calc.multiply(10, 5)); // 50
+console.log('Division:', calc.divide(10, 5));        // 2
+console.log('Circle Area:', calc.circleArea(5));     // 78.53975
+console.log('PI:', calc.PI);                         // 3.14159
 ```
 
 ---
@@ -330,6 +522,8 @@ console.log(utils.math.add(10, 5));
 ## 9. What is npm?
 
 npm (Node Package Manager) is the default package manager for Node.js, used to install and manage dependencies.
+
+npm is the world's largest software registry. Open source developers from every continent use npm to share and borrow packages, and many organizations use npm to manage private development as well.
 
 **Features:**
 - Largest software registry
