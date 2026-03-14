@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 main() 
 .then(() => console.log('Connected to MongoDB'))
@@ -14,4 +15,12 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', userSchema);
-const Employee = mongoose.model('Employee', userSchema);
+
+const newUser = new User({
+    name: 'John Doe',
+    age: 30,
+    email: 'john.doe@example.com'
+});
+newUser.save()
+.then(() => console.log('User saved'))
+.catch(err => console.log('Error saving user:', err));
