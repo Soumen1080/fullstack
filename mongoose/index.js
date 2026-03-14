@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
     email: String
 });
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model('Employee', userSchema);
 
 const newUser = new User({
     name: 'John Doe',
