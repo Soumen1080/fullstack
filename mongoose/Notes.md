@@ -257,3 +257,215 @@ main()
 - Use validators (`required`, `min`, `enum`)
 - Learn `populate()` and `timestamps`
 - Use `try/catch` and readable error logs
+
+---
+
+## 15) Definitions of All Mongoose Functions & Components
+
+### Core Components
+
+| Component | Definition |
+|-----------|------------|
+| `mongoose` | The top-level Mongoose object. Entry point for everything. |
+| `Schema` | Blueprint that defines the structure, types, and rules for documents in a collection. |
+| `Model` | A class built from a Schema. Provides all methods to interact with a MongoDB collection. |
+| `Document` | A single instance of a Model. Represents one record in the collection. |
+| `Connection` | The MongoDB connection object. Accessed via `mongoose.connection`. |
+
+---
+
+### Connection Functions
+
+```js
+mongoose.connect(uri)
+// Connects to MongoDB. Returns a Promise.
+// uri example: 'mongodb://127.0.0.1:27017/dbname'
+
+mongoose.connection.close()
+// Gracefully closes the MongoDB connection. Returns a Promise.
+
+mongoose.connection.on('connected', callback)
+// Fires when connection is established.
+
+mongoose.connection.on('error', callback)
+// Fires when a connection error occurs.
+
+mongoose.connection.on('disconnected', callback)
+// Fires when connection is lost.
+```
+
+---
+
+### Schema Functions
+
+```js
+new mongoose.Schema(definition, options)
+// Creates a new schema with field definitions and optional settings.
+// definition = { fieldName: Type } or { fieldName: { type, validators } }
+// options = { timestamps: true, strict: true, ... }
+
+schema.pre(event, callback)
+// Middleware that runs BEFORE an event (e.g., 'save', 'find', 'delete').
+// Must call next() to continue.
+
+schema.post(event, callback)
+// Middleware that runs AFTER an event completes.
+// Receives the resulting document as argument.
+
+schema.methods.methodName = function() {}
+// Adds a custom instance method to documents of this model.
+
+schema.statics.methodName = function() {}
+// Adds a custom static method to the Model itself.
+
+schema.virtual('fieldName')
+// Defines a virtual field (not stored in DB, computed on the fly).
+```
+
+---
+
+### Model (Static) Functions
+
+These are called on the Model class directly (e.g., `User.find()`):
+
+```js
+Model.create(data)
+// Creates and saves one or more documents in one step. Returns the saved doc(s).
+
+Model.insertMany([data])
+// Inserts multiple documents at once. More efficient than multiple .save() calls.
+
+Model.find(filter)
+// Returns ALL documents matching the filter. Empty filter {} returns all docs.
+
+Model.findOne(filter)
+// Returns the FIRST document matching the filter.
+
+Model.findById(id)
+// Returns one document by its _id field.
+
+Model.updateOne(filter, update)
+// Updates the FIRST document matching the filter.
+
+Model.updateMany(filter, update)
+// Updates ALL documents matching the filter.
+
+Model.findByIdAndUpdate(id, update, options)
+// Finds by _id and updates. Use { new: true } to return the updated document.
+
+Model.findOneAndUpdate(filter, update, options)
+// Finds one by filter and updates it.
+
+Model.deleteOne(filter)
+// Deletes the FIRST document matching the filter.
+
+Model.deleteMany(filter)
+// Deletes ALL documents matching the filter.
+
+Model.findByIdAndDelete(id)
+// Finds by _id and deletes the document. Returns the deleted document.
+
+Model.countDocuments(filter)
+// Returns the count of documents matching the filter.
+
+Model.exists(filter)
+// Returns the _id of one matching document, or null if none exists.
+```
+
+---
+
+### Document (Instance) Functions
+
+These are called on a document instance (e.g., `user.save()`):
+
+```js
+document.save()
+// Saves the document to the database. Runs validators and middleware.
+
+document.remove()  /  document.deleteOne()
+// Removes this specific document from the database.
+
+document.toObject()
+// Converts the Mongoose document to a plain JavaScript object.
+
+document.toJSON()
+// Converts the document to JSON format (used by JSON.stringify).
+
+document.isModified('field')
+// Returns true if the specified field has been changed since last save.
+
+document.set('field', value)
+// Sets a field value on the document.
+
+document.validate()
+// Runs validators on the document without saving. Returns a Promise.
+```
+
+---
+
+### Query Chain Functions
+
+These are chained onto queries like `User.find()`:
+
+```js
+.select('field1 field2')
+// Choose which fields to include (or exclude with '-field').
+
+.sort({ field: 1 })
+// Sort results. 1 = ascending (A→Z), -1 = descending (Z→A).
+
+.limit(n)
+// Limit results to n documents.
+
+.skip(n)
+// Skip the first n documents (used for pagination with .limit()).
+
+.populate('field')
+// Replaces an ObjectId reference with the actual document data.
+// Use 'field', 'name email' to select specific fields from populated doc.
+
+.lean()
+// Returns plain JS objects instead of Mongoose documents. Faster reads.
+
+.exec()
+// Executes the query and returns a Promise. Optional but explicit.
+
+.where('field').equals(value)
+// Alternative to passing a filter object.
+```
+
+---
+
+### Schema Data Types Reference
+
+| Type | Usage |
+|------|-------|
+| `String` | Text values |
+| `Number` | Integer or float |
+| `Boolean` | `true` / `false` |
+| `Date` | Date and time |
+| `Buffer` | Binary data |
+| `Array` | List of values e.g. `[String]` |
+| `mongoose.Schema.Types.ObjectId` | Reference to another document |
+| `mongoose.Schema.Types.Mixed` | Any type (no validation) |
+| `mongoose.Schema.Types.Decimal128` | High-precision decimal |
+| `Map` | Key-value pairs |
+
+---
+
+### Schema Validators Reference
+
+| Validator | Types | Definition |
+|-----------|-------|------------|
+| `required: true` | All | Field must be present |
+| `default: value` | All | Default value if not provided |
+| `unique: true` | All | Creates a unique index |
+| `min: n` | Number, Date | Minimum value |
+| `max: n` | Number, Date | Maximum value |
+| `minlength: n` | String | Minimum string length |
+| `maxlength: n` | String | Maximum string length |
+| `trim: true` | String | Removes leading/trailing spaces |
+| `lowercase: true` | String | Converts to lowercase before saving |
+| `uppercase: true` | String | Converts to uppercase before saving |
+| `enum: [values]` | String | Value must be one of the listed options |
+| `match: /regex/` | String | Value must match the regex pattern |
