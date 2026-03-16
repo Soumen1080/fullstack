@@ -24,3 +24,6 @@ const newUser = new User({
 newUser.save()
 .then(() => console.log('User saved'))
 .catch(err => console.log('Error saving user:', err));
+
+
+module.exports = User;
