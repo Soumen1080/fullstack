@@ -479,6 +479,29 @@ These are chained onto queries like `User.find()`:
 Mongoose can queue database operations when MongoDB is not connected yet.
 This feature is called operation buffering.
 
+### How it works
+
+When you run a query before connecting to MongoDB, Mongoose does this:
+
+You write an operation:
+
+```js
+User.find();
+```
+
+But MongoDB is not connected yet.
+
+Mongoose does not throw error immediately.
+Instead, it buffers (stores) the operation in memory.
+
+Once connection is established:
+
+```js
+mongoose.connect('mongodb://127.0.0.1:27017/testdb');
+```
+
+All buffered operations are executed automatically.
+
 Example:
 - You call `User.find()` before connection is ready.
 - Mongoose buffers that query for a short time.
