@@ -469,3 +469,77 @@ These are chained onto queries like `User.find()`:
 | `uppercase: true` | String | Converts to uppercase before saving |
 | `enum: [values]` | String | Value must be one of the listed options |
 | `match: /regex/` | String | Value must match the regex pattern |
+
+---
+
+## 16) Operation Buffering in Mongoose
+
+### What is operation buffering?
+
+Mongoose can queue database operations when MongoDB is not connected yet.
+This feature is called operation buffering.
+
+Example:
+- You call `User.find()` before connection is ready.
+- Mongoose buffers that query for a short time.
+- Once connected, it executes the queued operation.
+
+### Why it is useful
+
+- Helpful during app startup.
+- Prevents immediate failure for early queries.
+
+### Common issue
+
+If connection does not become ready in time, you may see:
+
+```txt
+MongooseError: Operation `users.find()` buffering timed out after 10000ms
+```
+
+This usually means:
+- MongoDB server is not running
+- Wrong connection URI
+- Query executed before successful connection
+
+### How to control buffering
+
+Disable buffering globally (fail fast):
+
+```js
+mongoose.set('bufferCommands', false);
+```
+
+Set buffer timeout globally:
+
+```js
+mongoose.set('bufferTimeoutMS', 5000);
+```
+
+Disable buffering for one schema:
+
+```js
+const userSchema = new mongoose.Schema(
+  { name: String },
+  { bufferCommands: false }
+);
+```
+
+### Best practice
+
+Always await the database connection before running queries.
+
+```js
+const mongoose = require('mongoose');
+
+async function start() {
+  await mongoose.connect('mongodb://127.0.0.1:27017/test');
+  console.log('DB connected');
+
+  // Safe: query after successful connection
+  const users = await User.find();
+  console.log(users);
+}
+
+start().catch((err) => console.log(err));
+```
