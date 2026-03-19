@@ -24,6 +24,9 @@ const newUser = new User({
 newUser.save()
 .then(() => console.log('User saved'))
 .catch(err => console.log('Error saving user:', err));
+User.find({ name: 'John Doe' })
+.then(users => console.log('Users found:', users))
+.catch(err => console.log('Error finding users:', err));
 
 
 module.exports = User;
