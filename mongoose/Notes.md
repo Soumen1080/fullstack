@@ -800,3 +800,32 @@ Best practice:
 
 5. Can you paginate without `skip()`?
    - Yes, with cursor-based pagination, but `skip/limit` is easiest for beginners.
+
+---
+
+## 18) List of Different Model Find Methods
+
+Use this as a quick revision list.
+
+| Method | Purpose | Returns |
+|--------|---------|---------|
+| `Model.find(filter)` | Find all matching documents | Array of docs (`[]` if none) |
+| `Model.findOne(filter)` | Find first matching document | One doc or `null` |
+| `Model.findById(id)` | Find one document by `_id` | One doc or `null` |
+| `Model.find().where('age').gt(18)` | Find using chained query builder | Array of docs |
+| `Model.find().select('name email')` | Find with selected fields only | Array of docs |
+| `Model.find().sort({ age: -1 })` | Find with sorting | Array of docs |
+| `Model.find().skip(n).limit(m)` | Find with pagination | Array of docs |
+| `Model.find().lean()` | Find as plain JS objects (faster read) | Array of plain objects |
+| `Model.findOne().lean()` | Find one as plain JS object | Plain object or `null` |
+| `Model.findById(id).populate('user')` | Find by id and load referenced docs | One populated doc or `null` |
+| `Model.findOneAndUpdate(filter, update, options)` | Find one and update in one step | Old/new doc or `null` |
+| `Model.findByIdAndUpdate(id, update, options)` | Find by id and update | Old/new doc or `null` |
+| `Model.findOneAndDelete(filter)` | Find one and delete | Deleted doc or `null` |
+| `Model.findByIdAndDelete(id)` | Find by id and delete | Deleted doc or `null` |
+
+### Mini Note
+
+- `find` methods that return many docs give an array.
+- `findOne` / `findById` style methods return one doc or `null`.
+- Use `{ new: true }` in update variants to get the updated document.
