@@ -100,7 +100,241 @@ const productSchema = new mongoose.Schema({
 });
 ```
 
-## 6) CRUD Functions
+## 6) Schema Validations - Definition & Usage
+
+### What are Schema Validations?
+
+Schema validations are rules that ensure data integrity before saving to MongoDB. They validate that data matches the expected format, type, value range, and business logic requirements. Mongoose validates data at the application level before it reaches the database.
+
+**When validation runs:**
+- `.save()` - Always runs validators
+- `.create()` - Always runs validators
+- `.updateOne()`, `.updateMany()` - Only if `runValidators: true` option is passed
+- `.findByIdAndUpdate()` - Only if `runValidators: true` option is passed
+
+### Built-in Validators
+
+Mongoose provides validators for common use cases:
+
+```js
+const userSchema = new mongoose.Schema({
+  // Required - field must have a value
+  name: { type: String, required: true },
+  
+  // Min/Max - for numbers and dates
+  age: { type: Number, min: 0, max: 150 },
+  
+  // Enum - field must be one of specified values
+  role: { type: String, enum: ['admin', 'user', 'guest'] },
+  
+  // Match (Regex) - string must match pattern
+  email: { type: String, match: /.+\@.+\..+/ },
+  
+  // Length - for strings (minlength, maxlength)
+  password: { type: String, minlength: 6, maxlength: 30 },
+  
+  // Custom message for required error
+  username: { 
+    type: String, 
+    required: [true, 'Username is required'],
+    minlength: [3, 'Username must be at least 3 characters']
+  },
+});
+```
+
+### Common Built-in Validator Options
+
+| Option | Type | Purpose | Example |
+|--------|------|---------|---------|
+| `required` | Boolean/Array | Field must exist | `required: true` |
+| `min` | Number | Minimum value (Number, Date) | `min: 0` |
+| `max` | Number | Maximum value (Number, Date) | `max: 100` |
+| `minlength` | Number | Minimum string length | `minlength: 5` |
+| `maxlength` | Number | Maximum string length | `maxlength: 50` |
+| `enum` | Array | Must be one of values | `enum: ['a', 'b', 'c']` |
+| `match` | RegExp | String must match pattern | `match: /^[A-Z]/` |
+| `lowercase` | Boolean | Convert to lowercase | `lowercase: true` |
+| `uppercase` | Boolean | Convert to uppercase | `uppercase: true` |
+| `trim` | Boolean | Remove whitespace | `trim: true` |
+
+### Custom Validators
+
+Create custom validation logic for complex rules:
+
+```js
+const productSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  price: { type: Number, required: true },
+  discount: { 
+    type: Number,
+    validate: function(v) {
+      // Custom validator - discount cannot exceed price
+      return v <= this.price;
+    },
+    message: 'Discount cannot be more than the price'
+  },
+  email: {
+    type: String,
+    validate: {
+      validator: function(v) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+      },
+      message: 'Invalid email format'
+    }
+  },
+  quantity: {
+    type: Number,
+    validate: [
+      {
+        validator: function(v) { return v > 0; },
+        message: 'Quantity must be positive'
+      }
+    ]
+  }
+});
+```
+
+### Asynchronous Validators
+
+Validate against database or external services:
+
+```js
+const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    validate: {
+      // Async validator using promises
+      validator: async function(v) {
+        const exists = await User.findOne({ email: v });
+        return !exists;
+      },
+      message: 'Email already exists'
+    }
+  }
+});
+```
+
+### Handling Validation Errors
+
+```js
+try {
+  const user = await User.create({
+    name: 'John',
+    age: -5,  // Invalid: negative age
+    role: 'superuser'  // Invalid: not in enum
+  });
+} catch (err) {
+  console.log('Validation Error:', err.message);
+  
+  // Access individual field errors
+  if (err.errors.age) {
+    console.log('Age error:', err.errors.age.message);
+  }
+  if (err.errors.role) {
+    console.log('Role error:', err.errors.role.message);
+  }
+  
+  // All errors object
+  console.log('All validation errors:', err.errors);
+}
+```
+
+### Practical Example - Complete Schema with Validations
+
+```js
+const studentSchema = new mongoose.Schema({
+  // Basic field validation
+  firstName: {
+    type: String,
+    required: [true, 'First name is required'],
+    minlength: [2, 'First name must be at least 2 characters'],
+    trim: true
+  },
+  
+  lastName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  
+  // Email with regex validation
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    match: [/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/, 'Invalid email format']
+  },
+  
+  // Age with min/max
+  age: {
+    type: Number,
+    required: true,
+    min: [18, 'Age must be at least 18'],
+    max: [65, 'Age cannot exceed 65']
+  },
+  
+  // Grade with enum
+  grade: {
+    type: String,
+    enum: {
+      values: ['A', 'B', 'C', 'D', 'F'],
+      message: 'Grade must be A, B, C, D, or F'
+    }
+  },
+  
+  // GPA with custom validator
+  gpa: {
+    type: Number,
+    min: [0, 'GPA cannot be less than 0'],
+    max: [4, 'GPA cannot exceed 4'],
+    validate: {
+      validator: function(v) {
+        return v % 0.01 === 0; // Must be decimal with 2 places
+      },
+      message: 'GPA must have maximum 2 decimal places'
+    }
+  },
+  
+  // Password validation
+  password: {
+    type: String,
+    required: [true, 'Password is required'],
+    minlength: [8, 'Password must be at least 8 characters']
+  }
+});
+
+const Student = mongoose.model('Student', studentSchema);
+```
+
+### Running Validators on Update Operations
+
+By default, validators don't run on update. Use `runValidators` option:
+
+```js
+// Without validation - (age: -5 is NOT validated)
+await Student.updateOne({ _id: id }, { age: -5 });
+
+// With validation - (age: -5 IS validated and will fail)
+await Student.updateOne(
+  { _id: id },
+  { age: -5 },
+  { runValidators: true }
+);
+
+// Same for findByIdAndUpdate
+const updated = await Student.findByIdAndUpdate(
+  id,
+  { age: -5 },
+  { runValidators: true, new: true }
+);
+```
+
+---
+
+## 7) CRUD Functions
 
 ### Create
 
@@ -140,7 +374,7 @@ await User.deleteMany({ isActive: false });
 await User.findByIdAndDelete('64f2a1...');
 ```
 
-## 7) Query Helpers and Operators
+## 8) Query Helpers and Operators
 
 Useful methods:
 - `find()`
@@ -168,7 +402,7 @@ Common MongoDB operators used in Mongoose:
 - `$and`, `$or`
 - `$regex`
 
-## 8) Timestamps
+## 9) Timestamps
 
 Add `createdAt` and `updatedAt` automatically:
 
@@ -182,7 +416,7 @@ const postSchema = new mongoose.Schema(
 );
 ```
 
-## 9) Middleware (Hooks)
+## 10) Middleware (Hooks)
 
 Run logic before or after operations.
 
@@ -197,7 +431,7 @@ userSchema.post('save', function (doc) {
 });
 ```
 
-## 10) Relationships and Populate
+## 11) Relationships and Populate
 
 Use `ref` + `populate()` for relation-like behavior.
 
@@ -212,7 +446,7 @@ const Order = mongoose.model('Order', orderSchema);
 const orders = await Order.find().populate('user', 'name email');
 ```
 
-## 11) Lean Queries
+## 12) Lean Queries
 
 Use `.lean()` when you only need plain JavaScript objects (faster reads).
 
@@ -220,7 +454,7 @@ Use `.lean()` when you only need plain JavaScript objects (faster reads).
 const users = await User.find().lean();
 ```
 
-## 12) Error Handling Pattern
+## 13) Error Handling Pattern
 
 ```js
 try {
@@ -231,7 +465,7 @@ try {
 }
 ```
 
-## 13) Your Current File Summary
+## 14) Your Current File Summary
 
 In your current code:
 - You connect to MongoDB correctly.
@@ -249,7 +483,7 @@ main()
   .catch((err) => console.log('MongoDB not connected:', err));
 ```
 
-## 14) Quick Revision Checklist
+## 15) Quick Revision Checklist
 
 - Know difference between Schema and Model
 - Memorize common data types
@@ -260,7 +494,7 @@ main()
 
 ---
 
-## 15) Definitions of All Mongoose Functions & Components
+## 16) Definitions of All Mongoose Functions & Components
 
 ### Core Components
 
@@ -472,7 +706,7 @@ These are chained onto queries like `User.find()`:
 
 ---
 
-## 16) Operation Buffering in Mongoose
+## 17) Operation Buffering in Mongoose
 
 ### What is operation buffering?
 
@@ -569,7 +803,7 @@ start().catch((err) => console.log(err));
 
 ---
 
-## 17) Model Find Methods in Detail
+## 18) Model Find Methods in Detail
 
 This section focuses only on read/query methods used on a model (for example, `User`).
 
@@ -800,7 +1034,7 @@ Best practice:
 
 ---
 
-## 18) Schema Validations in Detail
+## 19) Schema Validations in Detail
 
 Schema validation is one of the most important parts of Mongoose.
 It ensures only valid and clean data enters your database.
@@ -1173,7 +1407,7 @@ const studentSchema = new mongoose.Schema(
 
 ---
 
-## 18) List of Different Model Find Methods
+## 20) List of Different Model Find Methods
 
 Use this as a quick revision list.
 
