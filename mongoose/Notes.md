@@ -598,6 +598,43 @@ mongoose.connection.on('disconnected', callback)
 ```js
 new mongoose.Schema(definition, options)
 // Creates a new schema with field definitions and optional settings.
+
+---
+
+## 17) Schema Validation with Deletion (Middleware)
+
+When deleting documents with relationships or constraints, you often want to ensure certain checks run, or you trigger a **cascade delete** (e.g., deleting a User also deletes their Posts).
+
+### Using `pre` Hooks for Deletion
+
+Mongoose middleware (pre and post hooks) allows you to run functions before actions like `findOneAndDelete` or `deleteOne`. Validation on schemas ensures the data is strictly structured *before* creation/updating. Combining these gives you comprehensive control.
+
+```js
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: [true, 'Username is required'],
+    minLength: [3, 'Username must be at least 3 characters long']
+  }
+});
+
+// Run this hook before 'findOneAndDelete' operations
+userSchema.pre('findOneAndDelete', async function(next) {
+  console.log('Middleware running before deleting document...');
+  
+  // Example: Find the specific item being deleted
+  // const docToDelete = await this.model.findOne(this.getQuery());
+  
+  // Run cascade deletion logical checks
+  // await Post.deleteMany({ author: docToDelete._id });
+  
+  next();
+});
+
+const User = mongoose.model('User', userSchema);
+```
+
+When you use `User.findByIdAndDelete('...')`, the `pre('findOneAndDelete')` middleware handles operations ensuring validations and secondary deletions don't leave orphaned data.
 // definition = { fieldName: Type } or { fieldName: { type, validators } }
 // options = { timestamps: true, strict: true, ... }
 
