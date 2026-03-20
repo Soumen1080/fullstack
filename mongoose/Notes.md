@@ -78,25 +78,88 @@ const studentSchema = new mongoose.Schema({
 });
 ```
 
-## 5) Useful Schema Options and Validators
+## 5) SchemaType Options in Detail
 
-Common field options:
-- `required: true`
-- `default: value`
-- `unique: true` (creates unique index)
-- `trim: true` (String)
-- `lowercase: true` (String)
-- `min`, `max` (Number)
-- `enum` (fixed set of values)
+A SchemaType acts as a configuration object for an individual property in a schema. Here are the common options available:
 
-Example:
+### Options for ALL Schema Types
+- `required`: Boolean or function. If `true`, adds a required validator for this property.
+- `default`: Any value or function. Sets a default value for the path.
+- `select`: Boolean. Specifies default projections for queries (e.g., `select: false` hides it by default).
+- `validate`: Function. Adds a validation function for this property.
+- `get`: Function. Defines a custom getter for this property.
+- `set`: Function. Defines a custom setter for this property (runs before validation).
+- `alias`: String. Defines a virtual property with the given name that gets/sets this path.
+- `immutable`: Boolean. Prevents changing the path unless the parent document has `isNew: true`.
+- `immutable`: Boolean, defines path as immutable. Mongoose prevents you from changing immutable paths unless the parent document has `isNew: true`.
+- `transform`: Function. Mongoose calls this when you call `toJSON()` or `JSON.stringify()`.
+
+### Index Options (All Types)
+- `index`: Boolean. Defines a regular MongoDB index on this property.
+- `unique`: Boolean. Defines a unique MongoDB index on this property.
+- `sparse`: Boolean. Defines a sparse MongoDB index on this property.
+
+### String Options
+- `lowercase`: Boolean. Always calls `.toLowerCase()` on the value.
+- `uppercase`: Boolean. Always calls `.toUpperCase()` on the value.
+- `trim`: Boolean. Always calls `.trim()` to strip whitespace from the value.
+- `match`: RegExp. Verifies if the value matches the given regular expression.
+- `enum`: Array. Checks if the value is strictly equal to one of the values in the given array.
+- `minLength`: Number. Checks if the string length is not less than the given number.
+- `maxLength`: Number. Checks if the string length is not greater than the given number.
+- `populate`: Object. Sets default populate options.
+
+### Number Options
+- `min`: Number. Checks if the value is greater than or equal to the given minimum.
+- `max`: Number. Checks if the value is less than or equal to the given maximum.
+- `enum`: Array. Checks if the value is strictly equal to one of the values in the array.
+- `populate`: Object. Sets default populate options.
+
+### Date Options
+- `min`: Date. Validates that the date is greater than or equal to the minimum.
+- `max`: Date. Validates that the date is less than or equal to the maximum.
+- `expires`: Number or String. Creates a TTL (Time-To-Live) index with the value expressed in seconds (auto-deletes document).
+
+### The `type` Key Warning
+Because `type` is a reserved keyword in Mongoose, if you want an object to actually have a field named `type`, you must declare it like this:
+```js
+const holdingSchema = new mongoose.Schema({
+  asset: {
+    // Workaround for field named 'type'
+    type: { type: String },
+    ticker: String
+  }
+});
+```
+
+Example with multiple options applied:
 
 ```js
 const productSchema = new mongoose.Schema({
-  title: { type: String, required: true, trim: true },
-  price: { type: Number, required: true, min: 0 },
-  category: { type: String, enum: ['book', 'electronics', 'clothing'] },
-  inStock: { type: Boolean, default: true },
+  title: { 
+    type: String, 
+    required: true, 
+    trim: true, 
+    lowercase: true,
+    minLength: 3
+  },
+  price: { 
+    type: Number, 
+    required: true, 
+    min: 0 
+  },
+  category: { 
+    type: String, 
+    enum: ['book', 'electronics', 'clothing'] 
+  },
+  inStock: { 
+    type: Boolean, 
+    default: true 
+  },
+  secretCode: {
+    type: String,
+    select: false // Excluded from query results by default
+  }
 });
 ```
 
