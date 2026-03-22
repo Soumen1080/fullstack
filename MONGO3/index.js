@@ -2,11 +2,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 
+const app = express();
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-
-
-
 
 main().then(() => console.log('Connected to MongoDB successfully!'))
 .catch(err => console.log(err));
@@ -14,9 +13,6 @@ main().then(() => console.log('Connected to MongoDB successfully!'))
 async function main() {
   await mongoose.connect('mongodb://localhost/whatsapp');
 }
-
-
-const app = express();
 
 app.get('/', (req, res) => {
   res.send('Root is Working !!');
