@@ -22,21 +22,9 @@ async function main() {
 app.get("/chats", async (req, res) => {
   let chats = await Chat.find({});
   console.log(chats);
-  res.send(working);
+  //res.send(working);   why is i use this line then it is not working because we can not send two response in one route handler so we have to use only one response either res.send() or res.render() but not both
+  res.render('index.ejs', { chats: chats });
 });
-
-
-
-
-let chat1 = new Chat({
-  from : 'Alice',
-  to : 'Bob',
-  msg : 'Hello Bob! How are you?',
-  createdAt : new Date(), // time save according to UTC
-
-});
-chat1.save().then(() => console.log('Chat saved successfully!'))
-.catch(err => console.log(err));
 
 
 

@@ -28,7 +28,18 @@ let allChats = [
 ]
 
 
+let chat1 = new Chat({
+  from : 'Alice',
+  to : 'Bob',
+  msg : 'Hello Bob! How are you?',
+  createdAt : new Date(), // time save according to UTC
+
+});
+chat1.save().then(() => console.log('Chat saved successfully!'))
+.catch(err => console.log(err));
+
 
 
 Chat.insertMany(allChats).then(() => console.log('All chats saved successfully!'))
 .catch(err => console.log(err));
+
