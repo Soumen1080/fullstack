@@ -9,6 +9,7 @@ const app = express();
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, 'public'))); // to serve static files like css, js, images from the public folder
 
 
 main().then(() => console.log('Connected to MongoDB successfully!'))

@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Whatsapp</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <h1>Whatsapp Chats</h1>
 
    <% for(let chat of chats) { %>
+    <div class="chat">
         <div class="name">
             <h2> From: <%= chat.from %></h2>
         </div>
@@ -17,8 +19,9 @@
         </div>
     
         <div class="message">
-            <p message ><%= chat.msg %></p>
+            <p class="msg"><%= chat.msg %></p>
         </div>
+    </div>
    <% } %>   
     
 </body>
