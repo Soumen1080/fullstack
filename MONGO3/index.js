@@ -18,6 +18,12 @@ main().then(() => console.log('Connected to MongoDB successfully!'))
 async function main() {
   await mongoose.connect('mongodb://localhost/whatsapp');
 }
+//Index route
+app.get("/chats", async (req, res) => {
+  let chats = await Chat.find({});
+  console.log(chats);
+  res.send(working);
+});
 
 
 
