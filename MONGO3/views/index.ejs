@@ -27,6 +27,12 @@
         <div class="message">
             <p class="msg"><%= chat.msg %></p>
         </div>
+        <hr/>
+        <p><%= chat.createdAt.toString().split(' ')[4] %></p>
+
+        <P><%= chat.createdAt.toString().split(" ").slice(0, 4) %></P>
+
+
     </div>
    <% } %>   
     
