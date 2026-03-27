@@ -15,12 +15,12 @@ async function main() {
 let allChats = [
     {
         from : "soumen",
-        to : "sriza",   
-        msg : "Hello Sriza! How are you?",
+        to : "srizzu",   
+        msg : "Hello Srizzu! How are you?",
         createdAt : new Date(),// WHY USE NEW DATE() HERE? BECAUSE IT WILL SAVE THE TIME ACCORDING TO UTC
     },
     {
-        from : "sriza",
+        from : "srizzu",
         to : "soumen",   
         msg : "Hello Soumen! I am fine. How are you?",
         createdAt : new Date(),

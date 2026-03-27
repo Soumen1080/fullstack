@@ -27,6 +27,11 @@ app.get("/chats", async (req, res) => {
   res.render('index.ejs', { chats: chats });
 });
 
+app.get("chats/new", (req, res) => {
+  res.render('new.ejs');
+});
+
+
 
 
 
