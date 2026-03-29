@@ -26,6 +26,9 @@
     
         <div class="message">
             <p class="msg"><%= chat.msg %></p>
+            <form method="get" action="/chats/<%= chat._id %>/edit">
+                <button>Edit</button>
+            </form>
         </div>
         <hr/>
         <p><%= chat.createdAt.toString().split(' ')[4] %></p>
