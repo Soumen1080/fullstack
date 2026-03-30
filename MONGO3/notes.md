@@ -100,6 +100,25 @@ createdAt: {
 }
 ```
 
+### 9. The `async` function and When to Use It
+**Definition:** The `async` keyword is put in front of a function to indicate that it performs tasks that take time to finish (like fetching data, reading a file, or updating a database). Inside an `async` function, you can use the `await` keyword.
+**Explanation:** `await` tells JavaScript to "pause and wait" for the operation to finish before moving to the next line. This replacing the older `.then()` syntax, making asynchronous code read sequentially from top to bottom.
+**When to use it:** You use `async`/`await` whenever you are dealing with an operation that doesn't happen instantly. In an Express/Mongoose app, you mostly use it for database operations (`Chat.find()`, `Chat.findByIdAndUpdate()`, `newChat.save()`, etc.) inside your route handlers.
+**Codebase Example:**
+```javascript
+// Adding 'async' before the route handler function
+app.get("/chats", async (req, res) => {
+    try {
+        // Adding 'await' before the DB operation
+        let chats = await Chat.find(); 
+        res.render("index.ejs", { chats });
+    } catch (err) {
+        console.log("Error:", err);
+    }
+});
+```
+```
+
 ### 9. Express Route Handlers (`app.get`)
 **Definition:** A routing method in Express used to handle HTTP GET requests.
 **Explanation:** It listens for incoming HTTP GET requests at a specific path (URL) and executes a callback function when a request is matched. Notice how it takes two parameters (`req` for the incoming request, and `res` for the outgoing response).
