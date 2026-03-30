@@ -6,6 +6,14 @@
     <title>Edit Chat</title>
   </head>
   <body>
-    
+    <h1> Edit Your Chat: <%= chat._id %></h1>
+     <p> this is a simple edit form <b><%= chat.from %> to <%= chat.to %></b></p>
+
+     <form method="post" action="/chats/<%= chat._id %>?_method=PUT">
+       <textarea name="msg" rows="5" cols="30"><%= chat.msg %></textarea>
+       <button>Edit</button>
+     </form>
+
+
   </body>
   </html>

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 const Chat = require('./models/chat.js');
 const app = express();
-
+const methodOverride = require('method-override');
 //==================================================================
 
 
@@ -11,6 +11,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public'))); // to serve static files like css, js, images from the public folder
 app.use(express.urlencoded({extended: true})); // to parse the form data sent from the client side in the request body
+app.use(methodOverride('_method')); // to use the method override middleware to override the HTTP method of the request based on the value of the _method query parameter in the request URL
 //==================================================================  
 
 
@@ -59,6 +60,23 @@ app.get("/chats/:id/edit", async (req, res) => {
   let chat = await Chat.findById(id);
   res.render('edit.ejs', { chat: chat });
 });
+
+//==================================================================
+//update route
+app.put("/chats/:id", async(req, res) => {
+  let {id} = req.params;
+   let {msg: newChat} = req.body;
+   let updateChat = await Chat.findByIdAndUpdate(
+    id, 
+    {msg: newChat}, // this is for updating the msg field of the chat document with the newChat value sent from the client side in the request body
+    {new: true},// to return the updated document after update  
+    {runValidators: true} // to run the validators defined in the chat schema before updating the document in the database
+);
+console.log(updateChat);
+res.redirect("/chats");
+});
+
+
 
 //==================================================================
 app.get('/', (req, res) => {
