@@ -44,14 +44,27 @@ app.post("/chats", async (req, res) => {
     from: from,
     to: to,
     msg: msg,
-    created_at: new Date(),
+    createdAt: new Date(),
   });
   await newChat.save().then(() => console.log('Chat created successfully!'))
   .catch(err => console.log(err));
 
   res.redirect("/chats");
-  res.send('Chat created successfully!');
 });
+
+//==================================================================
+//show route
+app.get("/chats/:id", async (req, res) => {
+  let { id } = req.params;
+  let chat = await Chat.findById(id);
+
+  if (!chat) {
+    return res.status(404).send('Chat not found');
+  }
+
+  res.render('show.ejs', { chat: chat });
+});
+
 //==================================================================
 //edit route 
 
@@ -69,11 +82,21 @@ app.put("/chats/:id", async(req, res) => {
    let updateChat = await Chat.findByIdAndUpdate(
     id, 
     {msg: newChat}, // this is for updating the msg field of the chat document with the newChat value sent from the client side in the request body
-    {new: true},// to return the updated document after update  
-    {runValidators: true} // to run the validators defined in the chat schema before updating the document in the database
+    {new: true, runValidators: true} // to return updated doc and run schema validators during update
 );
-console.log(updateChat);
-res.redirect("/chats");
+
+  console.log(updateChat);
+  res.redirect("/chats");
+});
+
+//==================================================================
+//delete route
+app.delete("/chats/:id", async(req, res) => {
+   let {id} = req.params;
+   let deleteChat = await Chat.findByIdAndDelete(id);
+   console.log(deleteChat);
+   res.redirect("/chats");
+
 });
 
 

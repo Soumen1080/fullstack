@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Details</title>
+</head>
+<body>
+  <h1>Chat Details</h1>
+
+  <p><strong>From:</strong> <%= chat.from %></p>
+  <p><strong>To:</strong> <%= chat.to %></p>
+  <p><strong>Message:</strong> <%= chat.msg %></p>
+  <p><strong>Created:</strong> <%= chat.createdAt %></p>
+
+  <form method="get" action="/chats">
+    <button>Back to Chats</button>
+  </form>
+</body>
+</html>
